@@ -8,23 +8,30 @@ import (
 )
 
 type GhcClient struct {
-	Url       string
-	Method    string
-	Client    *http.Client
-	Header    map[string]string
-	Cookie    map[string]string
-	Timeout   int64
-	Keepalive bool
+	Url          string
+	Method       string
+	Client       *http.Client
+	Header       map[string]string
+	Cookie       map[string]string
+	Timeout      int64
+	Keepalive    bool
+	LastResponse *GhcResponse
+}
+
+type GhcResponse struct {
+	Header map[string][]string
+	Body   []byte
 }
 
 func NewClient() *GhcClient {
 	return &GhcClient{
-		Url:       "",
-		Method:    "GET",
-		Header:    make(map[string]string),
-		Cookie:    make(map[string]string),
-		Timeout:   10,
-		Keepalive: true,
+		Url:          "",
+		Method:       "GET",
+		Header:       make(map[string]string),
+		Cookie:       make(map[string]string),
+		Timeout:      10,
+		Keepalive:    true,
+		LastResponse: &GhcResponse{},
 	}
 }
 
@@ -74,5 +81,15 @@ func (gc *GhcClient) DoAll() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	gc.LastResponse.Body = body
+	gc.LastResponse.Header = do.Header
 	return body, nil
+}
+
+func (gc *GhcClient) GetResponseHeader() map[string][]string {
+	return gc.LastResponse.Header
+}
+
+func (gc *GhcClient) GetResponseBody() []byte {
+	return gc.LastResponse.Body
 }
