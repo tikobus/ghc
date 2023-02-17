@@ -7,6 +7,10 @@ import (
 	"time"
 )
 
+const DefaultUserAgent string = "Golang Http Client v1.0"
+const DefaultRequestMethod string = "GET"
+const DefaultRequestTimeout int64 = 10
+
 type GhcClient struct {
 	Url          string
 	Method       string
@@ -21,15 +25,16 @@ type GhcClient struct {
 type GhcResponse struct {
 	Header map[string][]string
 	Body   []byte
+	Status int
 }
 
 func NewClient() *GhcClient {
 	return &GhcClient{
 		Url:          "",
-		Method:       "GET",
+		Method:       DefaultRequestMethod,
 		Header:       make(map[string]string),
 		Cookie:       make(map[string]string),
-		Timeout:      10,
+		Timeout:      DefaultRequestTimeout,
 		Keepalive:    true,
 		LastResponse: &GhcResponse{},
 	}
@@ -83,6 +88,7 @@ func (gc *GhcClient) DoAll() ([]byte, error) {
 	}
 	gc.LastResponse.Body = body
 	gc.LastResponse.Header = do.Header
+	gc.LastResponse.Status = do.StatusCode
 	return body, nil
 }
 
@@ -92,4 +98,12 @@ func (gc *GhcClient) GetResponseHeader() map[string][]string {
 
 func (gc *GhcClient) GetResponseBody() []byte {
 	return gc.LastResponse.Body
+}
+
+func (gc *GhcClient) GetResponseBodyString() string {
+	return string(gc.LastResponse.Body)
+}
+
+func (gc *GhcClient) GetResponseStatus() int {
+	return gc.LastResponse.Status
 }
